@@ -15,7 +15,7 @@ const CoffeeSection = () => {
   const [retryAmount, setRetryAmount] = useState<number | null>(null);
 
   const coffeeOptions = [
-    { coffees: 1, amount: 99 },
+    { coffees: 1, amount: 10 },
     { coffees: 2, amount: 199, popular: true },
     { coffees: 3, amount: 299 },
   ];
