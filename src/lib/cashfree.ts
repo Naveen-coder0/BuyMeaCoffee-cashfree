@@ -1,44 +1,19 @@
 import { load } from "@cashfreepayments/cashfree-js";
 
-let cashfreeInstance: any = null;
+export async function startCashfreePayment(amount: number) {
+  const res = await fetch("http://localhost:5000/create-order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount })
+  });
 
-const getCashfree = async () => {
-  if (!cashfreeInstance) {
-    cashfreeInstance = await load({ mode: "sandbox" });
-  }
-  return cashfreeInstance;
-};
+  const data = await res.json();
 
-export const openCashfree = async (
-  amount: number,
-  onSuccess: () => void,
-  onFailure: () => void
-) => {
-  try {
-    const res = await fetch("http://localhost:4000/api/create-order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount }),
-    });
+  const cashfree = await load({
+    mode: "sandbox"
+  });
 
-    const data = await res.json();
-
-    if (!data.payment_session_id) {
-      throw new Error("No payment session id");
-    }
-
-    const cashfree = await getCashfree();
-
-    await cashfree.checkout({
-      paymentSessionId: data.payment_session_id,
-      redirectTarget: "_modal",
-    });
-
-    // ❗ DO NOT call onSuccess here
-    // payment result is not confirmed yet
-  } catch (err) {
-    console.error("Cashfree error:", err);
-    onFailure();
-  }
-};
-
+  cashfree?.checkout({
+    paymentSessionId: data.payment_session_id
+  });
+}
