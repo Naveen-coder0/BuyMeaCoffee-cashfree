@@ -1,19 +1,30 @@
 import { load } from "@cashfreepayments/cashfree-js";
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export async function startCashfreePayment(amount: number) {
-  const res = await fetch("http://localhost:5000/create-order", {
+  const res = await fetch(`${BACKEND_URL}/create-order`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount })
+    body: JSON.stringify({ amount }),
   });
+
+  if (!res.ok) {
+    throw new Error("Failed to create order");
+  }
 
   const data = await res.json();
 
   const cashfree = await load({
-    mode: "sandbox"
+    mode: "production", // 🔥 LIVE MODE
   });
 
-  cashfree?.checkout({
-    paymentSessionId: data.payment_session_id
+  if (!cashfree) {
+    throw new Error("Cashfree SDK failed to load");
+  }
+
+  cashfree.checkout({
+    paymentSessionId: data.payment_session_id,
+    redirectTarget: "_modal",
   });
 }
